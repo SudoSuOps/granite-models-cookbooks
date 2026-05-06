@@ -110,6 +110,110 @@ sat down with the model and confirmed it doesn't bluff.
 
 ---
 
+## Session 2 · 2026-05-06 · Numeric Discipline Compliance Layer · PASSED
+
+After Session 1's three clamps were applied at the system-prompt layer (chat UI v6 ·
+Underwriter + IC memo personas), the same Bookmaker-8B was re-tested against a
+72-unit garden-apartment acquisition memo: purchase price, current NOI, stabilized NOI,
+debt service, and CapEx requirement provided as inputs.
+
+### Test deal facts
+
+```
+72-unit garden apartment
+Purchase price                  $9,400,000
+Current (T-12) NOI               $548,000
+Stabilized NOI                   $675,000
+Debt service                     $436,200/yr
+CapEx requirement                $750,000
+Implied stabilized value         $11,250,000
+```
+
+### Passed checks
+
+- ✅ **Going-in cap rate** computed correctly:
+  $548,000 / $9,400,000 = **5.83%**
+- ✅ **Stabilized yield-on-cost** computed correctly:
+  $675,000 / $9,400,000 = **7.18%**
+- ✅ **Assumed exit / valuation cap** computed correctly:
+  $675,000 / $11,250,000 = **6.00%**
+- ✅ **Annual cash flow before CapEx** computed correctly:
+  $548,000 − $436,200 = **$111,800**
+- ✅ **CapEx funding gap flagged correctly** as a red flag:
+  $750,000 CapEx ÷ $111,800 annual cash flow = **6.7 years of current cash flow**
+  → equity reserve call required, properly identified
+- ✅ **Refused to compute IRR** due to missing assumptions:
+  hold period · exit cap confirmation · cash-flow schedule · CapEx timing ·
+  debt amortization · sale assumptions — all enumerated correctly in the refusal
+- ✅ **Recommendation properly constrained**:
+  *"Proceed to diligence — conditional approval"* (not approve · not reject)
+
+### Verdict
+
+**Numeric discipline compliance achieved.** The three clamps from Session 1 (cap-rate
+vocabulary · multifamily cash-flow framing · IRR refusal pattern) were absorbed via
+the system-prompt layer alone — no re-cook required.
+
+### One remaining label clamp
+
+The model wrote:
+```
+Stabilized Cap Rate (assumed): $675,000 NOI / $11,250,000 value = 6.00%
+```
+
+Mathematically fine, but the label "Stabilized Cap Rate" risks blending with
+"stabilized yield-on-cost" in ambiguous prompts. Rename to:
+
+```
+Assumed Stabilized Valuation Cap Rate: $675,000 / $11,250,000 = 6.00%
+```
+
+This keeps four distinct terms in clean separation:
+
+```
+1. Going-in cap rate                       T-12 NOI / purchase price          (entry yield, measured)
+2. Stabilized yield-on-cost                stabilized NOI / all-in basis      (return on invested cap, measured)
+3. Assumed Stabilized Valuation Cap Rate   stabilized NOI / assumed stab val  (assumption used to compute implied value)
+4. Exit / reversion cap                    sale-year NOI / sale price         (assumption used in IRR exit math)
+```
+
+The fourth-term distinction matters because Term 2 (yield-on-cost) and Term 3
+(valuation cap) can be NUMERICALLY similar but are CONCEPTUALLY different:
+- Yield-on-cost answers: *what return am I earning on every dollar I put in?*
+- Valuation cap answers: *what cap rate am I assuming to compute the property's value?*
+
+### Product implication
+
+This Session 2 result locks the architecture for the **AIOV rendering pipeline**:
+
+```
+Bookmaker drafts        →  the cooked LLM generates draft narrative + math
+Numeric rails clamp     →  deterministic check pass on every number / label
+Tribunal validates      →  multi-judge eval scores the draft against rubrics
+AIOV renders            →  customer-facing IC memo / valuation report
+Receipt anchors         →  Hedera-anchored Defendable receipt for the output
+```
+
+**Bookmaker-8B can generate broker-grade IC memo language**, but the final AIOV
+rendering must require a **deterministic numeric-discipline pass** before output is
+sealed and receipt-anchored. The LLM produces the draft. The rails enforce the math.
+The Tribunal scores the framing. AIOV renders the artifact. Hedera anchors the
+receipt. Five distinct stages, five distinct responsibilities — and only the Bookmaker
+is the LLM.
+
+### Cook-time vs serve-time discipline
+
+Session 2 confirms a doctrinal point: **clamps that work at the system-prompt layer
+do not require a re-cook.** The 8B already has the underlying capability — it just
+needed the right framing rules. We add the fourth-term clarification to the persona
+prompts (no re-cook · ships immediately) and proceed.
+
+The corpus pairs queued for Block-1-v3 (~1,300 pairs · cap-rate vocab + per-asset-class
+cash flow + refusal patterns) become **defensive depth** rather than mandatory ·
+worth doing for the v2 8B re-cook but not gating any current product release.
+
+---
+
 ## Append future sessions below
 
 (Date · Persona tested · Prompt summary · What handled well · Clamps required ·
