@@ -557,6 +557,181 @@ different meaning · which is exactly why the correction loop matters.
 
 ---
 
+## Session 5 · 2026-05-06 · Bookmaker-8B deed extraction + missing-NOI refusal · ANALYST TIER LOCK
+
+After Session 4 redefined the 3B as the intake brain, Donovan ran the same kind of
+extraction + refusal tasks against the Bookmaker-8B to confirm whether the 8B actually
+performs the analyst-tier work the 3B was disqualified from. The result: the 8B
+materially outperforms the 3B on deed/package extraction AND on missing-data refusal
+discipline.
+
+### What the 8B passed (cleanly)
+
+```
+EXTRACTION
+  ✓ Clean valid JSON object · no boundary leak (vs 3B's mid-JSON pollution)
+  ✓ Grantor / grantee / parcel / consideration / instrument / county / date all correct
+  ✓ Tenant / lease type / base rent / expiration / renewal options / exceptions captured
+  ✓ All output well-formed and consumable by downstream pipeline stages
+
+REFUSAL DISCIPLINE
+  ✓ Refused to produce a hard value opinion without rent or NOI
+  ✓ Correctly stated $3.8M asking price cannot be validated without income data
+  ✓ Did not invent a value (the 3B's Session 4 failure mode)
+  ✓ Refusal was structured and actionable, not just "I don't know"
+```
+
+### Minor issues · four new clamps for the 8B Bookmaker persona
+
+```
+ISSUE 1 · ZIP code dropping
+  Output: address as "1840 Indiantown Road, Jupiter, FL"
+  Required: address as "1840 Indiantown Road, Jupiter, FL 33458"
+  Class: extraction completeness · ZIP is a required field for title/lender
+         downstream consumers
+  Clamp: "When extracting addresses, preserve EVERY address component including
+         ZIP code. Do not abbreviate, normalize, or drop fields."
+
+ISSUE 2 · Hypothetical scenarios when not asked
+  Output: included "if NOI were $X, value would be $Y" speculation despite the
+         user explicitly providing no NOI
+  Required: refuse cleanly · do not generate hypothetical scenarios unless the
+         user explicitly requests them
+  Class: refusal-discipline scope creep · the model was right to flag missing
+         data but then weakened the refusal by appending speculation
+  Clamp: "If rent/NOI is missing, do NOT provide hypothetical value ranges
+         unless the user EXPLICITLY requests them. State INSUFFICIENT-DATA and
+         stop."
+
+ISSUE 3 · Tenant credit rating asserted without source
+  Output: stated tenant has BBB credit rating without that being in the source
+         document
+  Required: never assert specific credit ratings unless the source provides them
+  Class: hallucination at the data-attribution boundary · invented a fact and
+         attributed it to nothing
+  Clamp: "Do NOT state exact tenant credit ratings (BBB / Baa2 / etc.) unless
+         the rating is explicitly present in the source document."
+
+ISSUE 4 · Wrong language for unverified credit
+  Output: language asserting credit rather than recommending validation
+  Required: use "validate tenant credit profile" not "the tenant has BBB credit"
+  Class: tone discipline at intake · always recommend validation, never assert
+         what hasn't been verified
+  Clamp: "When the source doesn't provide a credit rating but credit assessment
+         is relevant, write 'validate tenant credit profile via S&P/Moody's/Fitch'
+         · do NOT assert a rating."
+```
+
+### What this session locks · the analyst-tier role for the 8B
+
+Combined with Session 1-3 findings (numeric discipline, IRR refusal, source
+hierarchy) and now Session 5 (extraction + refusal discipline), the 8B's full
+job description in the AIOV pipeline is:
+
+```
+BOOKMAKER-8B · ANALYST TIER (HACKER-PRO $599)
+
+EXTRACTION (Session 5)
+  ✓ Detailed deed/title field extraction (with ZIP and all components preserved)
+  ✓ Lease economics extraction (TI · security deposit · base rent · escalations)
+  ✓ Operating statement parsing (T-12 NOI · OpEx detail · GEI)
+
+VALUATION (Sessions 1-3)
+  ✓ Going-in cap rate (T-12 NOI / purchase price)
+  ✓ Stabilized yield-on-cost (stabilized NOI / all-in basis)
+  ✓ Assumed Stabilized Valuation Cap Rate (when computing implied value)
+  ✓ Exit/reversion cap (sale-year NOI / sale price · for IRR)
+  ✓ DSCR · cash-on-cash · CapEx funding gap analysis
+
+REFUSAL DISCIPLINE (Sessions 2-5)
+  ✓ INSUFFICIENT-DATA when NOI/T-12/rent-roll missing
+  ✓ Refusal to quote IRR without all model inputs
+  ✓ No hypothetical scenarios when refusal is the answer
+  ✓ No asserted credit ratings without source
+
+IC MEMO LANGUAGE (Session 2)
+  ✓ Structured Deal Summary / Sponsor / Property / Market / Underwriting / Debt /
+    Risk / Recommendation sections
+  ✓ Calibrated recommendation: APPROVE / CONDITIONAL / PROCEED-TO-DILIGENCE /
+    HOLD / REJECT / INSUFFICIENT-DATA (no fuzzy phrasings)
+
+CONFLICT TRIBUNAL (Session 1)
+  ✓ Source hierarchy: T-12 = HONEY (highest) > T-3/rent-roll = JELLY > OM = PROPOLIS
+  ✓ Never averages across the hierarchy
+  ✓ Flags discrepancies between sources rather than silently picking one
+```
+
+### Locked product roles after Session 5
+
+```
+HACKER ($250 · 3B brain · "the cheap intake bee on the desk")
+  intake · receipt metadata · basic deed summary · missing-data checklist
+  package classification · legal-safe explainers
+  NOT the analyst · NOT the extractor at production accuracy
+
+HACKER-PRO ($599 · 8B brain · "the AIOV browser-side analyst")
+  detailed extraction (deed + lease + OM) · lease economics · valuation ·
+  AIOV pre-broker analysis · refusal discipline · IC memo drafting
+  THE analyst tier · gated by Numeric Gate before AIOV render
+
+(Stage 2) Numeric Gate
+  cap-rate math direction · TI math · security deposit math · ask/floor support ·
+  range sanity · status-enum compliance · recommendation cohere
+
+(Stage 3) Tribunal
+  conflict source hierarchy enforcement · honey/jelly/propolis grading · final seal
+
+HACKER-AGX ($2K · 30B brain · COOK IN FLIGHT)
+  premium escalation · second opinion · IC committee tier review
+```
+
+**The brand-locked tagline:**
+
+> *"HACKER-3B is the cheap intake bee on the desk. Bookmaker-8B is the analyst
+> brain in the browser. The Numeric Gate is the spreadsheet checker. Atlas-30B
+> is the IC committee."*
+
+That's the SKU stack. Each tier has a job a different bee was built to do.
+
+### Why "the cheap intake bee on the desk" is the right framing
+
+The original framing pitched the $250 HACKER as "underwriting brain in a small
+box" — which sounded like a step DOWN from the $599 HACKER-PRO. The Session 4
+correction-loop showed that framing was wrong (the 3B can't do underwriting).
+
+The new framing pitches the $250 HACKER as "intake bee on every desk" — which
+is a step UP for what every brokerage actually needs at the desk-edge:
+
+```
+Every broker desk needs intake automation:
+  - Deal package arrives (PDF / images / lease + financials)
+  - Classify documents · extract basic fields · build receipt · refuse if
+    incomplete · hand off to the analyst tier with structured JSON
+  - This is high-frequency, low-margin work · running on $250 hardware is the
+    right cost structure
+  - Every desk gets one · 4 brokers in an office = 4 boxes = $1,000 in hardware
+
+The 8B / Bookmaker tier is the analyst brain that sits behind the intake bees.
+You don't need one per desk · you need one per office (or in the datacenter).
+The 3B feeds it pre-cleaned structured data, the analyst does the real work.
+
+That's a brokerage office in a box. The desks have intake bees. The analyst
+sits in the back office (or in the cloud). The committee (30B) reviews the
+hard ones. Every layer earns its tier.
+```
+
+### Three sessions of receipts, three of strengths · the cooks know who they are
+
+Five correction-loop sessions across two cooks have produced:
+- 4 Bookmaker-8B sessions (1, 2, 3, 5) → analyst tier locked, 7 clamps applied
+- 1 Hack-Deed-Maker-3B session (4) → intake tier locked, 5 personas defined
+
+The cookbook now has both *what each cook does* AND *what each cook does NOT do*.
+That's the receipt for shipping. **Cooks that know their job ship. Cooks that
+think they do everything fail in production.**
+
+---
+
 ## Append future sessions below
 
 (Date · Persona tested · Prompt summary · What handled well · Clamps required ·

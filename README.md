@@ -111,6 +111,17 @@ Agent runtime (every tier)                  BeeAI Framework       · Python + Ty
 Five components, five jobs. Each tier earns its slot by passing the correction-loop
 qualitative gate (`COOKS/correction-loop-findings.md`), not just the math eval.
 
+**The SKU stack** (Session 5 brand lock):
+
+> *HACKER-3B is the cheap intake bee on the desk. Bookmaker-8B is the analyst
+> brain in the browser. The Numeric Gate is the spreadsheet checker. Atlas-30B
+> is the IC committee.*
+
+A brokerage office in a box. Every desk gets a cheap intake bee · 4 brokers in
+an office = 4 boxes = $1,000 in hardware. The analyst sits behind them (one per
+office, or in the datacenter). The committee reviews the hard ones. Each layer
+earns its tier.
+
 Every cooked checkpoint gets:
 - A LoRA adapter weight file (proprietary · stays on customer-held HACKER hardware)
 - A Hedera-anchored manifest at `weights.<class>.defendable.eth/<id>`
