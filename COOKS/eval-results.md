@@ -142,20 +142,57 @@ TOTAL                        1.174    71.70%    0.705    80.17%       0.817    7
 8B vs 70B: −0.469 loss / +8.47pp acc · already-known Granite pivot receipt
 ```
 
-**The HACKER pricing tier story is now empirically locked:**
+**The HACKER pricing tier story · UPDATED 2026-05-06 after Session 4 correction-loop:**
+
+The eval numbers above told one story. The qualitative correction loop on the 3B
+(Session 4 in `COOKS/correction-loop-findings.md`) told another. The 1.92pp accuracy
+gap between 3B and 8B is NOT "the same brain, slightly worse" — it's *exactly the
+shape of valuation work* that disqualifies the 3B from valuation entirely. This
+prompted a product-architecture reframe:
 
 ```
-PRODUCT             BRAIN              POST-COOK ASSISTANT-ONLY        DELTA TO NEXT TIER
-HACKER ($250)       Hack-Deed-3B       0.8167 / 78.25%                 +1.92pp acc upgrading to HACKER-PRO
-HACKER-PRO ($599)   Bookmaker-8B       0.7051 / 80.17%                 +X.XXpp acc upgrading to HACKER-AGX (TBD)
-HACKER-AGX ($2K)    Atlas-Granite-30B  pending (cook live)             ──
-Datacenter          30B OR Atlas-70B   30B will likely win              ──
+PRODUCT              BRAIN              ROLE                           VERDICT FROM CORRECTION LOOP
+HACKER ($250)        Hack-Deed-3B       INTAKE / extraction /          Passes deed extract, receipts,
+                                         receipt metadata /             legal-safe explainers, missing-
+                                         legal-safe explainers /        data refusal · FAILS valuation
+                                         missing-data refusal           cap math, lease economics, source
+                                         · NOT a valuation engine       hierarchy · disqualified for AIOV
+                                                                        valuation primary
+
+HACKER-PRO ($599)    Bookmaker-8B       VALUATION / IC memo /          Passes structure + first-order math
+                                         lease economics /              + tribunal source hierarchy ·
+                                         comp framing /                 FAILS cap-direction + recommendation
+                                         narrative discipline           cohere · gated by Numeric Gate
+                                         · the analyst brain            (deterministic stage 2)
+
+(Stage 2)            Numeric Gate       Deterministic Python validator with 6+ rules · catches every
+                                         predictable LLM failure mode · mandatory before AIOV render
+
+(Stage 3)            Tribunal           Multi-judge conflict adjudicator · enforces honey/jelly/propolis
+                                         hierarchy · seals before render
+
+HACKER-AGX ($2K)     Atlas-Granite-30B  PREMIUM / escalation /         Cook in flight · ETA 2026-05-08 ~07 UTC
+                                         doctrine review /              · expected to crush the 8B's blockers
+                                         IC committee tier              with bee-hive's 94K SwarmRefinery
+                                                                        doctrine pairs in Block-1-v2
+
+Datacenter           Atlas-Granite-30B  doctrine model · pending cook completion + correction loop
+                     OR Atlas-70B (Llama)
 ```
 
-**+$349 of hardware buys you +1.92pp of token accuracy.** That's the customer-felt delta
-between the $250 desk-edge box and the $599 PRO box on broker-grade output. For many
-routine underwriting tasks, that delta is invisible. The discipline is shipping the
-3B everywhere it's enough · not pricing every customer up the stack.
+**The taxonomy lock:**
+```
+HACKER-3B            collects and protects the deal.
+Bookmaker-8B         values it.
+The Numeric Gate     seals it.
+Atlas-Granite-30B    reviews it on the hard ones.
+Hedera               anchors the receipt.
+```
+
+That's the product. Each tier earns its slot by passing the correction-loop
+qualitative gate, not just the eval-loss math gate. The 3B passed *its job* (intake)
+honestly. It would have failed if we'd shipped it as a valuation brain — which the
+eval numbers alone wouldn't have told us.
 
 ---
 

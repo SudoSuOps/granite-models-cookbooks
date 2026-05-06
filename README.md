@@ -74,19 +74,42 @@ governance, risk, compliance receipts.
 
 ---
 
-## How we use Granite (the operational stack)
+## How we use Granite (the operational stack · role-locked 2026-05-06)
+
+After 4 correction-loop sessions on Bookmaker-8B and Hack-Deed-Maker-3B, each cook
+has a locked role:
 
 ```
-HACKER box ($250 · Orin Nano 8GB)          Hack-Deed-Maker = granite-4.1-3b cooked
-HACKER-PRO ($599 · Orin NX 16GB)            Bookmaker        = granite-4.1-8b cooked
-HACKER-AGX ($2K · AGX Orin 64GB)            Branch-tier      = granite-4.1-30b cooked (next cook)
-Datacenter (swarmrails 2× PRO 6000)         Doctrine model   = either Granite-30B or Llama-70B
-                                            (decided after 30B cook completes)
+HACKER ($250 · Orin Nano 8GB)              Hack-Deed-Maker-3B = granite-4.1-3b cooked
+                                            INTAKE brain · deed extraction ·
+                                            receipt metadata · legal-safe explainers ·
+                                            missing-data refusal · NOT a valuation engine
 
-Document parser (every HACKER tier)        Granite-Docling-258M  · TEDS 0.97 on FinTabNet
-Safety sidecar (AIOV pre/post)             Granite-Guardian      · Apache 2.0 classifier
-Agent runtime (Bookmaker, Rainmaker)       BeeAI Framework       · Python + TypeScript · Apache 2.0
+HACKER-PRO ($599 · Orin NX 16GB)            Bookmaker-8B       = granite-4.1-8b cooked
+                                            VALUATION brain · IC memo · lease economics ·
+                                            comp framing · the analyst tier
+                                            Gated by Numeric Gate (stage 2) before render
+
+HACKER-AGX ($2K · AGX Orin 64GB)            Atlas-Granite-30B  = granite-4.1-30b cooked
+                                            PREMIUM brain · doctrine review · escalation ·
+                                            second opinion / IC committee tier
+                                            (cook in flight 2026-05-06 · Block-1-v2)
+
+Datacenter (swarmrails 2× PRO 6000)         Doctrine model     = decided post-30B cook + correction loop
+
+Document parser (every tier)                Granite-Docling-258M  · TEDS 0.97 on FinTabNet
+Safety sidecar (AIOV pre/post)              Granite-Guardian      · Apache 2.0 classifier
+Agent runtime (every tier)                  BeeAI Framework       · Python + TypeScript · Apache 2.0
 ```
+
+**The taxonomy lock:**
+
+> *HACKER-3B collects and protects the deal. Bookmaker-8B values it. The Numeric
+> Gate seals it. Atlas-Granite-30B reviews it on the hard ones. Hedera anchors
+> the receipt.*
+
+Five components, five jobs. Each tier earns its slot by passing the correction-loop
+qualitative gate (`COOKS/correction-loop-findings.md`), not just the math eval.
 
 Every cooked checkpoint gets:
 - A LoRA adapter weight file (proprietary · stays on customer-held HACKER hardware)

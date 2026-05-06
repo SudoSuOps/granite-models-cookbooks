@@ -336,6 +336,227 @@ NEXT CORPUS PASS?              Block-1-v3 should add ~500 pairs of the
 
 ---
 
+## Session 4 · 2026-05-06 · Hack-Deed-Maker-3B 8-test batch · ROLE REDEFINED
+
+The 3B was tested with the same correction-loop discipline as the 8B (Sessions 1-3),
+on a wider 8-test batch covering deed extraction, missing-data refusal, STNL cap math,
+lease economics extraction, tribunal conflict, receipt metadata, legal-safe deed
+explanation, and final consistency checking.
+
+**The strategic finding:** the 3B is NOT a smaller version of the 8B for valuation.
+It's a different tier entirely — an **intake brain**, not an underwriting brain.
+
+### Test results matrix
+
+```
+TEST                                       VERDICT       NOTES
+1. Deed/package extraction                 PARTIAL PASS  Fields extracted correctly · JSON
+                                                          boundary failed (output polluted by
+                                                          other answers mid-JSON)
+2. Missing NOI refusal                     PASS          Correctly refused · used [x] checked
+                                                          boxes (formatting fix needed)
+3. STNL cap-rate math                      FAIL          Cap-direction reversed + ask/floor
+                                                          unsupported by own cap range
+4. Lease extraction JSON                   FAIL          ti_allowance_total = 45.0 (got the
+                                                          $/PSF · should be 4,250 × $45 =
+                                                          $191,250) · security_deposit = 2800
+                                                          (should be $28,000)
+5. Tribunal conflict source hierarchy      FAIL          INVERTED hierarchy:
+                                                          said rent-roll=propolis · T-12=jelly
+                                                          should be: T-12=HONEY · rent-roll=JELLY
+                                                          · OM=PROPOLIS
+                                                          Also misattributed $992K to rent roll
+                                                          (was T-12)
+6. Receipt metadata privacy                PASS          Clean · no address / NOI / tenant /
+                                                          deal facts in receipt JSON · only
+                                                          metadata · perfectly aligned with AIOV
+                                                          public-receipt principle
+7. Legal-safe deed explanation             PASS          "Special warranty guarantees only the
+                                                          grantor's ownership period" · careful,
+                                                          concise, did not overclaim
+8. Final consistency checker               PARTIAL PASS  Caught draft cap-math failure correctly
+                                                          but ended with "All components consistent"
+                                                          AFTER saying draft failed · self-
+                                                          contradiction in summary line
+```
+
+### Production blockers for 3B (DIFFERENT from the 8B blockers)
+
+The 8B's failures (Session 3) were valuation-engine failures: cap direction · refusal
+under data scarcity · self-contradiction in recommendations. The 3B has those same
+failures PLUS unique-to-3B failures that disqualify it from valuation work entirely:
+
+```
+3B-SPECIFIC BLOCKERS · disqualify 3B from running valuation as primary
+
+A. JSON BOUNDARY DISCIPLINE
+   When asked for JSON only, 3B leaks surrounding text and may merge outputs from
+   other tasks into one JSON. This is a structural output-format failure, not a
+   numeric one. The 8B doesn't do this.
+
+B. LEASE ECONOMICS NUMERIC EXTRACTION
+   3B got TI allowance and security deposit wrong by ORDERS OF MAGNITUDE
+   ($45 vs $191,250 · $2,800 vs $28,000). These are simple multiplications the
+   8B handled correctly. Smaller capacity = less cross-attention to which
+   number-with-units goes where.
+
+C. SOURCE HIERARCHY DOCTRINE
+   3B INVERTED the Royal Jelly tier hierarchy on the conflict-tribunal test:
+   said rent-roll=propolis (lowest tier · marketing claim) when the doctrine is
+   T-12=HONEY (highest), rent-roll=JELLY (medium), OM=PROPOLIS (lowest).
+   The 8B passed this same test correctly. This is a doctrine-level memorization
+   gap that's hard to fix at prompt-level alone — the model needs to be re-cooked
+   with stronger source-hierarchy supervision.
+
+D. SELF-CONTRADICTION IN SUMMARY LINES
+   3B said "draft failed" then concluded "All components consistent." Same class
+   of error the 8B has but at higher frequency in the 3B.
+
+8B-INHERITED BLOCKERS · also present in 3B but at higher frequency
+   - Cap-rate value-range direction (still reversed)
+   - Ask/floor unsupported by own cap range
+   - Refusal-discipline formatting (checked-box [x] looks like completed diligence)
+```
+
+### What the 3B PASSED — the new product role
+
+```
+A. RECEIPT METADATA · PRIVACY-CLEAN
+   Built a clean receipt JSON with model name, parser, timestamps, request/response
+   sizes, requestor wallet — and CRITICALLY zero deal facts. No address, no NOI,
+   no tenant name. Perfectly aligned with the AIOV public-receipt principle.
+   This is exactly what should anchor at aiov.defendable.eth/<deal_id> publicly.
+
+B. LEGAL-SAFE DEED EXPLANATIONS
+   "A special warranty deed guarantees the grantor only owned the property during
+   the grantor's ownership — not before." Concise. Accurate. Does not overclaim.
+   This is plain-English transaction explainer work · low downside · valuable to
+   the broker's client at every tier.
+
+C. MISSING-DATA REFUSAL DISCIPLINE
+   Refused to value when NOI was missing. Listed the required diligence items.
+   The discipline holds. Just needs formatting cleanup (unchecked bullets, not
+   checked boxes that look like done-diligence).
+
+D. PARTIAL DEED FIELD EXTRACTION
+   Grantor, grantee, address, consideration, instrument-type all extracted right.
+   Basic field-extraction is in scope. The JSON-boundary discipline needs a clamp
+   but the underlying extraction works.
+```
+
+### The product reframe · 3B is INTAKE, not UNDERWRITING
+
+**Old product framing (Sessions 1-2):**
+```
+HACKER ($250)       Hack-Deed-Maker-3B (Granite 4.1)    everyday underwriting brain
+HACKER-PRO ($599)   Bookmaker-8B (Granite 4.1)          compositional narrative + IC memos
+HACKER-AGX ($2K)    Atlas-Granite-30B                    branch-tier doctrine model
+```
+
+**New product framing (Session 4 lock):**
+```
+HACKER ($250)        Hack-Deed-Maker-3B (Granite 4.1)
+                     INTAKE BRAIN · deed extraction · receipt metadata · legal-safe
+                     explanations · missing-data refusal checklist
+                     NOT a valuation engine · NOT a primary AIOV renderer
+
+HACKER-PRO ($599)    Bookmaker-8B (Granite 4.1)
+                     ANALYST BRAIN · AIOV first-pass valuation · lease economics ·
+                     IC memo language · comp framing · narrative discipline
+                     The valuation tier · runs against Numeric Gate before sealing
+
+Numeric Gate         Stage 2 deterministic validator (mandatory before AIOV render)
+                     The spreadsheet checker behind every memo · 6+ rules
+                     See COOKS/aiov-numeric-gate-spec.md
+
+Tribunal             Stage 3 multi-judge conflict adjudicator · honey/jelly/propolis
+                     hierarchy enforced · seals the final AIOV before render
+
+HACKER-AGX ($2K)     Atlas-Granite-30B (Granite 4.1)
+                     PREMIUM TIER · doctrine model · escalation / second opinion /
+                     IC review on hard deals · pending cook completion
+```
+
+### The locked taxonomy
+
+```
+HACKER-3B  collects and protects the deal.
+Bookmaker-8B  values it.
+The Numeric Gate  seals it.
+Atlas-Granite-30B  reviews it on the hard ones.
+Hedera  anchors the receipt.
+```
+
+That's the product. Five components. Each has a job a bigger or smaller component
+shouldn't try to do.
+
+### What this means for the cookbook & next cooks
+
+```
+NEXT 3B RE-COOK (deferred · not blocking ship)
+  Cook on a corpus weighted toward INTAKE work:
+    - deed/title field extraction (clean JSON-only output)
+    - lease economic field extraction (with multiplication: RSF × PSF)
+    - receipt metadata templates (privacy-clean by construction)
+    - legal-safe transaction explainers (no overclaim discipline)
+    - source hierarchy doctrine (HONEY > JELLY > PROPOLIS · explicit pairs)
+    - missing-data refusal templates (unchecked bullet format)
+  Skip valuation pairs for the 3B re-cook · leave that to the 8B / 30B.
+
+NEXT 8B RE-COOK (deferred · not blocking ship)
+  Cook on Block-1-v3 with valuation pairs that hit the 8B's specific blockers:
+    - cap-rate value-range direction examples (~500 pairs)
+    - missing-data refusal under partial data (~300 pairs)
+    - recommendation-cohere fact-check examples (~300 pairs)
+    - asset-class implied-cap sanity examples (~200 pairs)
+
+CHAT UI v9 · 3B persona set rewrite
+  Replace Underwriter / IC memo personas (which fail on 3B) with intake personas:
+    - Deed Extractor (JSON-only output · no surrounding text)
+    - Package Intake Classifier (deed / lease / OM / financials / other)
+    - Receipt Metadata Builder (privacy-clean by construction)
+    - Legal-Safe Transaction Explainer (special warranty · grant deed · estoppel)
+    - Missing-Data Refusal (with proper unchecked bullet format)
+  Disable Underwriter / IC memo on the 3B UI · banner says "route to Bookmaker-8B".
+
+PIPELINE INTEGRATION
+  AIOV pipeline now explicitly routes intake to 3B and valuation to 8B:
+
+  customer uploads deal package
+    → HACKER-3B (intake) classifies + extracts deed/lease/OM fields → JSON
+    → router validates JSON-only output via deterministic gate
+    → Bookmaker-8B (valuation) consumes structured fields + writes IC memo
+    → Numeric Gate validates 8B output
+    → Tribunal scores final draft against rubric
+    → AIOV renders customer-facing PDF
+    → Hedera anchors receipt at aiov.defendable.eth/<deal_id>
+```
+
+### Why this finding is more bullish than it sounds
+
+The 3B not being the valuation brain is **good news** for the product, not bad:
+
+```
+1. The 3B has a CLEAN role · intake / extraction / receipts · which is exactly
+   what every customer needs and what runs at $250 hardware.
+2. The 8B's failure modes are bounded and Numeric-Gate-addressable. The 3B's
+   failure modes were unbounded enough to disqualify it from valuation. Now that
+   we know that, the 3B's job description is honest.
+3. Pipeline tier-routing is now explicit: intake → 3B (cheap) · valuation → 8B
+   (the brain) · review → 30B (premium). Each tier earns its slot.
+4. The line "HACKER-3B collects and protects the deal · Bookmaker-8B values it ·
+   the Numeric Gate seals it" is a one-sentence brand articulation that maps
+   perfectly to the deployment architecture. Every word is a component with a
+   defined responsibility.
+
+The eval numbers said the 3B trails 8B by 1.92pp · which sounded like "almost
+the same brain, smaller." Session 4 showed that 1.92pp lives precisely in the
+shape of valuation work that disqualifies the 3B from valuation. Same number,
+different meaning · which is exactly why the correction loop matters.
+```
+
+---
+
 ## Append future sessions below
 
 (Date · Persona tested · Prompt summary · What handled well · Clamps required ·
