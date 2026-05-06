@@ -214,6 +214,128 @@ worth doing for the v2 8B re-cook but not gating any current product release.
 
 ---
 
+## Session 3 · 2026-05-06 · 5-test batch · Numeric Gate doctrine locked
+
+After Session 2 confirmed numeric-discipline absorption at the system-prompt layer,
+Donovan ran a 5-test stress batch covering: cap-rate math under uncertainty, missing-
+data refusal discipline, comp weighting numeric consistency, document conflict tribunal,
+and multifamily category-leak detection.
+
+**The big finding:** Bookmaker-8B fails *predictably*. Not like a hallucinating chatbot.
+Like a junior analyst who knows the memo language but needs a spreadsheet checker sitting
+behind it. **That predictability is what makes a deterministic Numeric Gate sufficient.**
+
+### Test results matrix
+
+```
+TEST                                       VERDICT       FAILURE MODE
+1. Dollar General retest (cap math)        FAIL          Cap-range value direction reversed +
+                                                          weighted-cap arithmetic error +
+                                                          risk-adjustment direction backwards
+2. Missing NOI retail (refusal discipline) FAIL          Acknowledged missing data, then produced
+                                                          value/ask/proceed anyway · violated refusal
+3. Retail comp weighting (range math)      FAIL          Cap-rate range → value range direction
+                                                          reversed (higher cap should give lower value)
+4. Document tribunal (conflict adjud.)     PASS          Correct source hierarchy: T-12 > rent-roll > OM
+                                                          Did NOT average · used T-12 as primary
+                                                          (small typo: "TERRIBLIS" should be "TRIBUNAL")
+5. Multifamily category-leak               MIXED         First-order math correct (cap, YOC, value-add)
+                                                          BUT recommendation contradicted own numbers
+                                                          ("$16.32M < $14.2M" — factually wrong)
+```
+
+### Three production blockers identified
+
+```
+BLOCKER 1 · Cap-rate value-range direction
+  Model output:                Selected cap range 6.50%-6.75% → Value range $1.917M-$1.960M
+  Correct math:                $132,000 / 0.0650 = $2,030,769  (lower cap → higher value)
+                               $132,000 / 0.0675 = $1,955,556  (higher cap → lower value)
+  So range:                    $1.96M - $2.03M  (NOT $1.917M-$1.960M)
+  Failure class:               Direction error · the model has the formula but applies it inverted
+  Root cause:                  Likely from training pairs that report cap-then-value as fixed
+                               anchors rather than functional inverse relationship
+
+BLOCKER 2 · Refusal under missing data
+  Test setup:                  Retail asset · NOI missing · T-12 missing · partial rent roll
+  Correct behavior:            "No defensible value opinion can be provided. Ask cannot be
+                                validated without NOI/T-12/full rent roll. Recommendation:
+                                HOLD / INSUFFICIENT DATA."
+  Model output:                "VALUE: $8,900,000  RECOMMENDED VALUE: $8,900,000  ASK: $8,900,000
+                                PASS/PROCEED: PROCEED" (after acknowledging missing inputs)
+  Plus invented conditionals:  "If NOI is $2.5M+, value: $8.5M-$9.5M" → on $8.9M ask that's
+                                a 28% cap rate. Numerically absurd.
+  Failure class:               Refusal-discipline collapse under partial data + invented
+                               conditional projections that fail sanity-check
+
+BLOCKER 3 · Self-contradiction in recommendation
+  Multifamily test computed:   Implied stabilized value = $16.32M
+                               Purchase price          = $14.20M
+  Recommendation said:         "Implied stabilized value ($16.32M) < purchase price ($14.2M)"
+  Reality:                     $16.32M is GREATER than $14.20M
+  Failure class:               The model's narrative layer contradicts its own arithmetic
+                               output · no fact-check loop on its own numbers
+```
+
+### What WORKS · keep these strengths
+
+```
+1. CRE memo language          structure, vocabulary, recommendation calibration discipline
+2. Document conflict tribunal Honey/Jelly/Propolis source hierarchy applied correctly
+3. First-order ratios         going-in cap, stabilized YOC, debt service, cash-flow math
+4. Calibrated recommendation  uses CONDITIONAL/PROCEED/HOLD/REJECT not just yes/no
+5. Refusal of IRR             refused with enumerated missing inputs · the cleanest gate
+```
+
+### The architectural lock · Numeric Gate is mandatory
+
+The 5-stage AIOV pipeline (locked in Session 2) becomes operationally specific:
+
+```
+1. Bookmaker drafts            LLM produces draft narrative + math
+2. Numeric Gate                ← THIS SESSION · new spec drafted
+   ├── cap-rate direction      lower cap MUST yield higher value (and vice versa)
+   ├── missing-data refusal    no NOI/T-12/rent-roll = no value opinion
+   ├── recommendation cohere   no statement contradicting own arithmetic
+   ├── source hierarchy        T-12 > rent-roll > OM (no averaging)
+   ├── status enum             only [PASS / REJECT / PROCEED-TO-DILIGENCE /
+                                CONDITIONAL-APPROVAL / APPROVE / INSUFFICIENT-DATA]
+   └── range sanity            implied cap rates must fall in plausible
+                                asset-class bounds (e.g. retail 5-10% not 28%)
+3. Tribunal validates          multi-judge eval scores draft+gate output
+4. AIOV renders                customer-facing PDF/HTML, only after rails pass
+5. Receipt anchors             Hedera-anchored Defendable receipt
+```
+
+Full Numeric Gate spec is in `COOKS/aiov-numeric-gate-spec.md` (Apache 2.0 · public).
+
+### Why the failure shape matters
+
+The Bookmaker-8B fails *predictably*. The errors are:
+- **Bounded** (5 specific failure classes, not arbitrary hallucinations)
+- **Detectable** (every error is a deterministic check away from validation)
+- **Correctable** (Numeric Gate can flag and reroute for regeneration)
+
+A model that fails arbitrarily is undeployable. A model that fails along a known
+shape is a *component* — and we have a component spec.
+
+### Verdict for the cook itself
+
+```
+SHIP-READY?                    Not yet · gated on Numeric Gate stage being built
+COOK QUALITY?                  Strong · 87.46% / 80.17% holds up qualitatively
+                               for narrative/structure/conflict/first-order math
+RE-COOK NEEDED?                Not for these blockers · they're addressable
+                               at gate layer (stage 2), not cook layer (stage 1)
+NEXT CORPUS PASS?              Block-1-v3 should add ~500 pairs of the
+                               *correct* cap-direction examples to harden
+                               at training time too · belt and suspenders
+30B IMPLICATIONS?              The 30B will likely have similar shape failures
+                               but at lower frequency · same gate catches both
+```
+
+---
+
 ## Append future sessions below
 
 (Date · Persona tested · Prompt summary · What handled well · Clamps required ·
