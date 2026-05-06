@@ -11,19 +11,55 @@ cooks complete.
 
 ---
 
-## Live status (updated 2026-05-06 18:00 UTC)
+## Live status (updated 2026-05-06 18:40 UTC)
+
+### Whole-sequence eval (cook methodology · HF Trainer)
 
 ```
                               step 200   step 400   step 600   step 800   step 1000   step 1177   final eval
-Atlas-70B (Llama 3.3, 70B)    0.8074     0.5517     0.5118     0.5031     0.5018      0.5019      0.5018  ✓
-Bookmaker-8B (Granite, 8B)    0.9421     0.5615     0.4983 ⚡  0.4756     pending     pending     pending
-Hack-Deed-Maker-3B (Gran, 3B) 1.102      0.6559     0.5773     0.5487     pending     pending     pending
-Atlas-Granite-30B (Gran, 30B) ─── queued · launches post-Atlas-70B finish ──────────────
+Atlas-70B (Llama 3.3, 70B)    0.8074     0.5517     0.5118     0.5031     0.5018 ✓    0.5019      0.5018  ✓ COOK COMPLETE
+Bookmaker-8B (Granite, 8B)    0.9421     0.5615     0.4983 ⚡  0.4756     pending     pending     in flight
+Hack-Deed-Maker-3B (Gran, 3B) 1.102      0.6559     0.5773     0.5487     0.5393      0.5383 ✓    0.5383  ✓ COOK COMPLETE
+Atlas-Granite-30B (Gran, 30B) ─── queued · awaiting "approved" · base download in progress ──
 ```
 
 ⚡ = the moment Granite-8B beat Atlas-70B's eventual best (0.4983 < 0.5018).
 This happened at step 600 of the 8B cook · 7 steps before Atlas-70B reached its
 own best at step 1000.
+
+### Post-cook independent verification (assistant-target-only methodology)
+
+After consolidating each cooked LoRA adapter to standard PEFT format, we
+re-run a stricter eval that masks prefix tokens — scoring only the assistant
+target. This measures what the model **actually generates**, not what it
+sees in context. Numbers are different (higher) than cook-reported because
+prompt tokens (system persona, market env, deal facts) are excluded.
+
+```
+                              records   loss       token_acc   per-bucket weakest
+Atlas-70B (Llama 3.3, 70B)        996   1.1739     71.70%      ic_memo (1.58 / 71.4%)
+Bookmaker-8B (Granite, 8B)        ─── pending consolidation + eval (8B cook still running) ───
+Hack-Deed-Maker-3B (Gran, 3B)     ─── pending consolidation + eval ──────────────
+Atlas-Granite-30B (Gran, 30B)     ─── pending cook ──────────────
+```
+
+### Atlas-70B per-bucket detail (from post-cook assistant-only eval)
+
+```
+BUCKET                       RECORDS    TOKENS         LOSS      ACC
+underwriting_calc                697   1,033,948     1.1579    71.64%
+ic_memo                           75      15,260     1.5756    71.38%   ← weakest loss
+comp_market                      189      39,156     1.4941    70.88%
+other (lease extraction)          32       7,128     0.8560    85.48%   ← BEST · structured JSON
+other (agent mode)                 3         631     1.3574    77.34%   (tiny sample)
+─────────────────────────────────────────────────────────────────────────
+TOTAL                            996   1,096,123     1.1739    71.70%
+```
+
+**Atlas excels** at structured JSON extraction (lease abstraction).
+**Atlas struggles relatively** with narrative-heavy buckets (IC memos · comp/market analysis)
+where answer-space entropy is higher. *The Granite-30B cook should narrow the narrative-bucket
+gap.*
 
 ---
 

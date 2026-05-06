@@ -60,7 +60,7 @@ Recipe YAML at `atlasOS/recipes/hack-deed-maker-3b.yml`.
 
 ---
 
-## The trajectory (live · still cooking)
+## The trajectory (COMPLETE · 2026-05-06 18:30 UTC)
 
 ```
 step      eval_loss   token_acc    notes
@@ -69,10 +69,20 @@ step      eval_loss   token_acc    notes
    400    0.6559      84.17%       big gain · still tracking proportionally with 8B
    600    0.5773      85.64%       gap with 8B narrowing slightly
    800    0.5487      86.09%       cosine kicking in · plateau pattern
-  1000    pending     pending      next eval · ETA ~18:00 UTC
-  1177    pending     pending      final
+  1000    0.5393      86.27%       very small gain · cosine LR near zero
+  1177    0.5383      86.29%       FINAL · 5.20 hour cook · landed BETTER than projected
 ─────────────────────────────────────────────────────────────────────────
+
+FINAL eval_loss:    0.5383   (whole-sequence methodology · HF Trainer)
+FINAL token_acc:    86.29%
+FINAL train_loss:   0.8784   (running average across all 1177 steps · NOT comparable to eval)
+Cook elapsed:       5.20 hours
 ```
+
+**Vs Atlas-70B (Llama):** 3B is **0.0365 above** the 70B's 0.5018 final eval —
+a remarkably small gap considering 1/23 the parameters and 1/14 the cook time.
+At the desk-edge price point ($250 HACKER box), this is the empirical receipt
+that the labor-business product holds.
 
 The gap between the 3B and 8B at step 800: only **~1.21 percentage points**
 of token accuracy (86.09% vs 87.30%). That's smaller than the noise floor

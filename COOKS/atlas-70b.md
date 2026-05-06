@@ -120,6 +120,70 @@ FINAL train_loss:   0.6931  (running average across all 1177 steps · note: NOT
 
 ---
 
+## Post-cook adapter consolidation (2026-05-06 18:11 UTC)
+
+The cook saved checkpoints in FSDP-sharded format (per `fsdp_state_dict_type:
+SHARDED_STATE_DICT` in the accelerate config). To use the adapter for inference
+in single-process mode, we consolidated to standard PEFT format:
+
+```
+Source       /data2/atlas-70b/lora-adapter/checkpoint-1177/pytorch_model_fsdp_0/
+              (2 distcp shards · 830MB each + .metadata index)
+Output       /data2/atlas-70b/consolidated-adapter/
+              ├── adapter_config.json     (702 B)
+              └── adapter_model.safetensors (1.66 GB)
+Method       torch.distributed.checkpoint.format_utils.dcp_to_torch_save
+              + key-rename to PEFT convention (lora_A.default.weight / lora_B.default.weight)
+Time         4.1 sec total
+LoRA params  1,120 (560 lora_A + 560 lora_B = 80 layers × 7 modules ✓ exact match)
+```
+
+SHA256 receipts:
+- adapter_model.safetensors: `a5f35e4b71d45719809443426797e7bed87d6e4d6b095c39f319235718e65f67`
+- adapter_config.json: `0d9de152c61a0d31cc07dc8dcd4d1cf13803f0642b543f8b6f244ba1b2aa489e`
+
+---
+
+## Post-cook eval (post-consolidation · independent verification)
+
+Two eval runs against the consolidated adapter to verify:
+
+### A · Assistant-only methodology (the rigorous "what the model GENERATES" measure)
+
+```
+Methodology   Loss computed ONLY on assistant-target tokens (prefix masked with -100).
+              Score what the model has to actually produce, not what it sees in context.
+Wall clock    24.2 min
+Records       996 / 996 ✓
+Total tokens  1,096,123 (assistant-target only)
+
+HEADLINE
+  Eval loss          1.1739
+  Token accuracy     71.70%
+
+PER-BUCKET BREAKDOWN
+  BUCKET                       RECORDS   TOKENS         LOSS      ACC
+  underwriting_calc                697  1,033,948      1.1579   71.64%
+  ic_memo                           75     15,260      1.5756   71.38%   ← weakest (narrative depth)
+  comp_market                      189     39,156      1.4941   70.88%
+  other (lease extraction)          32      7,128      0.8560   85.48%   ← STRONGEST (structured JSON)
+  other (agent mode)                 3        631      1.3574   77.34%   (small sample)
+```
+
+**Reading the buckets:** Atlas crushes structured JSON extraction (lease abstraction at 85% accuracy)
+and handles dense underwriting math at broker-grade (72%). The narrative-heavy buckets (IC memos and
+comp/market analysis) carry higher loss because the answer space has higher entropy — there are
+more valid ways to write a memo. *This is the bucket where the next-tier 30B's extra capacity
+should pay off most.*
+
+### B · Whole-sequence methodology (matches HF Trainer · cook reproduction)
+
+(Pending in-flight verification eval at time of this commit · expected to land at 0.5018 ± 0.005
+matching the cook's reported best · validates that consolidation produced an adapter functionally
+identical to the FSDP-shard checkpoint. Will append numbers once eval completes.)
+
+---
+
 ## The manifest
 
 Sha256-anchored manifest at `/data2/atlas-70b/MANIFEST.json`:
