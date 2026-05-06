@@ -45,7 +45,7 @@ prompt tokens (system persona, market env, deal facts) are excluded.
                               records   loss       token_acc   per-bucket weakest
 Atlas-70B (Llama 3.3, 70B)        996   1.1739     71.70%      ic_memo (1.58 / 71.4%)
 Bookmaker-8B (Granite, 8B)        996   0.7051 ⚡  80.17%      underwriting_calc (0.73 / 79.4%)
-Hack-Deed-Maker-3B (Gran, 3B)     ─── pending consolidation + eval ──────────
+Hack-Deed-Maker-3B (Gran, 3B)     996   0.8167 ⚡  78.25%      underwriting_calc (0.85 / 77.4%)
 Atlas-Granite-30B (Gran, 30B)     ─── pending cook ──────────────
 ```
 
@@ -109,6 +109,53 @@ TOTAL                            996   1,388,941     0.7051    80.17%
 (Token counts differ from Atlas-70B's eval because the Granite chat template uses different
 special tokens than Llama's · same content, different tokenization rules. Both score the same
 assistant-target span content.)
+
+### Hack-Deed-Maker-3B per-bucket detail (this cook's post-cook eval)
+
+```
+BUCKET                       RECORDS    TOKENS         LOSS      ACC
+underwriting_calc                697   1,320,209     0.8467    77.44%
+ic_memo                           75      16,423     0.0706    97.91%   ← narrative-heavy crushed
+comp_market                      189      43,261     0.3386    91.41%
+other (lease extraction)          32       8,319     0.0136    99.54%   ← near-perfect on structured JSON
+other (agent mode)                 3         729     0.6830    86.69%   (tiny sample)
+─────────────────────────────────────────────────────────────────────────
+TOTAL                            996   1,388,941     0.8167    78.25%
+```
+
+### Three-way per-bucket head-to-head (3B vs 8B vs 70B · assistant-only)
+
+```
+BUCKET                       Atlas-70B (Llama)  Bookmaker-8B (Gran)  Hack-Deed-3B (Gran)
+                             loss     acc       loss     acc          loss     acc
+─────────────────────────────────────────────────────────────────────────────────────
+underwriting_calc            1.158    71.64%    0.731    79.42%       0.847    77.44%
+ic_memo                      1.576    71.38%    0.039    98.61%       0.071    97.91%
+comp_market                  1.494    70.88%    0.293    92.19%       0.339    91.41%
+lease_extract                0.856    85.48%    0.011    99.70%       0.014    99.54%
+agent_mode                   1.357    77.34%    0.540    86.97%       0.683    86.69%
+─────────────────────────────────────────────────────────────────────────────────────
+TOTAL                        1.174    71.70%    0.705    80.17%       0.817    78.25%
+
+3B vs 70B: −0.357 loss / +6.55pp acc · 3B BEATS 70B Llama at 1/23 the parameters
+3B vs 8B:  +0.112 loss / −1.92pp acc · 3B trails 8B by ~2pp · invisible on routine work
+8B vs 70B: −0.469 loss / +8.47pp acc · already-known Granite pivot receipt
+```
+
+**The HACKER pricing tier story is now empirically locked:**
+
+```
+PRODUCT             BRAIN              POST-COOK ASSISTANT-ONLY        DELTA TO NEXT TIER
+HACKER ($250)       Hack-Deed-3B       0.8167 / 78.25%                 +1.92pp acc upgrading to HACKER-PRO
+HACKER-PRO ($599)   Bookmaker-8B       0.7051 / 80.17%                 +X.XXpp acc upgrading to HACKER-AGX (TBD)
+HACKER-AGX ($2K)    Atlas-Granite-30B  pending (cook live)             ──
+Datacenter          30B OR Atlas-70B   30B will likely win              ──
+```
+
+**+$349 of hardware buys you +1.92pp of token accuracy.** That's the customer-felt delta
+between the $250 desk-edge box and the $599 PRO box on broker-grade output. For many
+routine underwriting tasks, that delta is invisible. The discipline is shipping the
+3B everywhere it's enough · not pricing every customer up the stack.
 
 ---
 
@@ -186,9 +233,9 @@ Three reasons.
 ## Pending fills (this doc updates as cooks land)
 
 - [x] Bookmaker-8B post-cook assistant-only eval (DONE 2026-05-06 20:32 UTC · 0.7051 / 80.17%)
+- [x] Hack-Deed-Maker-3B post-cook assistant-only eval (DONE 2026-05-06 20:38 UTC · 0.8167 / 78.25%)
 - [ ] Atlas-Granite-30B full trajectory (LIVE · ETA ~2026-05-08 07:00 UTC)
 - [ ] Atlas-70B token accuracy back-fill from log parse
-- [ ] Hack-Deed-Maker-3B post-cook assistant-only eval
 - [ ] Final summary chart · fleet IQ-vs-cost frontier (after all 4 cooks land)
 
 ---
