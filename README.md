@@ -99,23 +99,23 @@ Every cooked checkpoint gets:
 ## The cooks (current and planned · see COOKS/ for full detail)
 
 ```
-COOK NAME                       BASE                       STATUS         ETA
-Atlas-70B                       Llama-3.3-70B-Instruct     COMPLETE       73.57h · landed 2026-05-06 17:42 UTC
-                                                                          eval_loss 0.5018 (best, step 1000)
-Bookmaker-8B                    Granite-4.1-8B             IN FLIGHT      ~21:00 UTC · step ~800/1177
-                                                                          eval_loss 0.4756 at step 800 (already beat 70B)
-Hack-Deed-Maker-3B              Granite-4.1-3B             IN FLIGHT      ~18:30 UTC · step ~800/1177
-                                                                          eval_loss 0.5487 at step 800
-Atlas-Granite-30B (next)        Granite-4.1-30B            QUEUED         ~tomorrow · 30-50h on swarmrails
-                                                                          target: outperform Atlas-70B at 0.5018
-                                                                          if yes → becomes new Atlas doctrine model
+COOK NAME                       BASE                       STATUS         FINAL eval_loss
+Atlas-70B                       Llama-3.3-70B-Instruct     COMPLETE       0.5018 (73.57h · ~$37 electrons)
+Bookmaker-8B                    Granite-4.1-8B             COMPLETE       0.467  (8.89h  · ~$2  · BEATS 70B Llama)
+Hack-Deed-Maker-3B              Granite-4.1-3B             COMPLETE       0.5383 (5.20h  · ~$1.20)
+Atlas-Granite-30B               Granite-4.1-30B            LIVE           in flight · ETA 2026-05-08 ~07 UTC
+                                                                          on Block-1-v2 (407K · 3.24× Block-0)
+                                                                          target: <0.42 → becomes doctrine model
 ```
 
-**The rule:** every cook uses the same Royal Jelly CRE Block-0 corpus
-(125,651 train / 996 fingerprint-disjoint eval) with the same Gold Standard
-recipe (LoRA r=64 α=32 · LR 1e-5 cosine · eff batch 32 · max_steps 1177).
-Only the base model changes. *That's how we know what we got — the full cook,
-apples-to-apples.*
+**The rule:** the first three cooks (substrate-comparison frontier) all used Royal
+Jelly CRE **Block-0** (125,651 train / 996 fingerprint-disjoint eval) with the same
+Gold Standard recipe (LoRA r=64 α=32 · LR 1e-5 cosine · eff batch 32 · max_steps 1177).
+Only the base model changes. The fourth cook (Atlas-Granite-30B) uses the expanded
+**Block-1-v2** (407,076 train · 3.24× Block-0) since it's the production-doctrine
+candidate, not a substrate-test sample. Same recipe · same eval set · same eval sha256.
+*That's how we know what we got — the full cook, apples-to-apples on every dimension
+that matters for the comparison being made.*
 
 ---
 
@@ -163,11 +163,16 @@ granite-models-cookbooks/
 │   └── (18 individual cookbook files, expanding commit-by-commit)
 ├── COOKS/                            our actual training runs
 │   ├── README.md                     index · status · roadmap
-│   ├── atlas-70b.md                  Llama-3.3-70B · COMPLETE
-│   ├── bookmaker-8b.md               Granite-4.1-8B · in flight
-│   ├── hack-deed-maker-3b.md         Granite-4.1-3B · in flight
-│   ├── atlas-granite-30b.md          Granite-4.1-30B · NEXT (queued)
-│   └── eval-results.md               head-to-head · the IQ-vs-cost frontier
+│   ├── atlas-70b.md                  Llama-3.3-70B · COMPLETE 0.5018
+│   ├── bookmaker-8b.md               Granite-4.1-8B  · COMPLETE 0.467 · BEATS 70B
+│   ├── hack-deed-maker-3b.md         Granite-4.1-3B  · COMPLETE 0.5383
+│   ├── atlas-granite-30b.md          Granite-4.1-30B · LIVE on Block-1-v2 (407K)
+│   ├── eval-results.md               head-to-head · the IQ-vs-cost frontier
+│   └── scripts/                      build + cook + FSDP scripts (apache 2.0)
+│       ├── build_block1_v2.py        deterministic corpus builder
+│       ├── train_atlas_granite_30b.py the cook · TRL 0.24
+│       ├── accelerate_fsdp_granite.yaml FSDP config
+│       └── README.md                 run order + reconciliation notes
 └── BEEAI/                            agent framework integration
     └── README.md                     architecture · roadmap
 ```
